@@ -8,7 +8,7 @@ function main()
 
 	if( args.length == 0 )
 	{
-		args = ["analysis.js"];
+		args = ["mystery.js"];
 	}
 	var filePath = args[0];
 	
@@ -115,14 +115,34 @@ function complexity(filePath)
 	// Tranverse program with a function visitor.
 	traverseWithParents(ast, function (node) 
 	{
+		//console.log(node);
 		if (node.type === 'FunctionDeclaration') 
 		{
 			var builder = new FunctionBuilder();
 
+			traverseWithParents(node, function (node2)
+			{
+				if ( isDecision(node2) ) {
+					if ( builder.SimpleCyclomaticComplexity == 0) {
+						builder.SimpleCyclomaticComplexity += 1
+					}
+					builder.SimpleCyclomaticComplexity += 1
+					
+					let num_decisions = decisionCount(node2)
+					if ( builder.MaxConditions < num_decisions ) {
+						builder.MaxConditions = num_decisions;
+					}
+				}
+			});
+
 			builder.FunctionName = functionName(node);
 			builder.StartLine    = node.loc.start.line;
-
+			builder.ParameterCount = node.params.length;		
 			builders[builder.FunctionName] = builder;
+		}
+		else if (node.type === 'String')
+		{
+			fileBuilder.Strings += 1;
 		}
 
 	});
@@ -181,6 +201,14 @@ if (!String.prototype.format) {
       ;
     });
   };
+}
+
+// Helper function to count number of binary expressions
+function decisionCount( node ) {
+	if (node.hasOwnProperty('test') && node.test.hasOwnProperty('type') && node.test.type === 'LogicalExpression') {
+		return 1 + decisionCount(node.test.left) + decisionCount(node.test.right);
+	}
+	return 1;
 }
 
 main();
@@ -264,7 +292,7 @@ remainder.toString() + " seconds";
 				      && n != '_' && n != '@' && n != '-' && n != '.' )
 				    {
 				      window.alert("Only Alphanumeric are allowed.\nPlease re-enter the value.");
-				      cfield.value = '⠀';
+				      cfield.value = 'Рађ';
 				      cfield.focus();
 				    }
 				    cfield.value =  cfield.value.toUpperCase();
@@ -275,4 +303,5 @@ remainder.toString() + " seconds";
 mints.toString().split(".")[0] + " " + szmin;
       }
   }
+
  exports.complexity = complexity;
